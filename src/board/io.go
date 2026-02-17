@@ -6,11 +6,11 @@ import (
 	"os"
 )
 
-func TxtToBoard(filename string) (Board, bool) {
+func TxtToBoard(filename string) (Board, error) {
 	file, err := os.Open(filename)
 	if err != nil {
-		fmt.Println("Error to read file")
-		return Board{}, false
+		// fmt.Println("Error to read file")
+		return Board{}, fmt.Errorf("Error to read file")
 	}
 
 	defer file.Close()
@@ -19,7 +19,6 @@ func TxtToBoard(filename string) (Board, bool) {
 	var board Board
 
 	scanner := bufio.NewScanner(file)
-	// fmt.Print(scanner)
 
 	row := 0
 	expectedLength := -1
@@ -32,16 +31,14 @@ func TxtToBoard(filename string) (Board, bool) {
 		}
 
 		if lineLength != expectedLength {
-			fmt.Printf("Line %d has length %d, expected %d\n", row+1, lineLength, expectedLength)
-			return Board{}, false
+			return Board{}, fmt.Errorf("Line %d has length %d, expected %d\n", row+1, lineLength, expectedLength)
 		}
 
 		currentRow := make([]Cell, expectedLength)
 
 		for col, ch := range line {
 			if ch < 'A' || ch > 'Z' {
-				fmt.Printf("Warna %c tidak valid, silahkan masukkan hanya dari A-Z\n", ch)
-				return Board{}, false
+				return Board{}, fmt.Errorf("Warna %c tidak valid, silahkan masukkan hanya dari A-Z\n", ch)
 			}
 
 			currentRow[col].Region = ch
@@ -59,31 +56,27 @@ func TxtToBoard(filename string) (Board, bool) {
 	}
 
 	if row != expectedLength {
-		fmt.Printf("Row length (%d) doesn't equal column length %d\n", row, expectedLength)
-		return Board{}, true
+		return Board{}, fmt.Errorf("Row length (%d) doesn't equal column length %d\n", row, expectedLength)
 	}
 
 	countUniqueColours := len(uniqueColours)
 
 	if row != countUniqueColours {
-		fmt.Printf("Colours (%d) not equal to the dimension %d\n", countUniqueColours, row)
-		return Board{}, false
+		return Board{}, fmt.Errorf("Colours (%d) not equal to the dimension %d\n", countUniqueColours, row)
 	}
 
-	// fmt.Println(data[1])
-	// fmt.Printf("%T\n", data)
 	board.RowLength = expectedLength
 	board.ColLength = expectedLength
 
-	return board, true
+	return board, nil
 
 }
 
-func (board Board) BoardToTxt(filename string) {
+func (board Board) BoardToTxt(filename string) error {
 	file, err := os.Create(filename)
 	if err != nil {
 		fmt.Println("Can't save to txt file")
-		return
+		return err
 	}
 
 	defer file.Close()
@@ -99,4 +92,5 @@ func (board Board) BoardToTxt(filename string) {
 		}
 		file.WriteString(line + "\n")
 	}
+	return nil
 }
