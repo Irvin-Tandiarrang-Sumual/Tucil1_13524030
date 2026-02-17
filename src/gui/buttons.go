@@ -36,6 +36,7 @@ func MakeLoadButton(state *AppState, label *widget.Label) *widget.Button {
 			b, parseErr := board.TxtToBoard(filePath)
 			if parseErr != nil {
 				dialog.ShowError(parseErr, state.Window)
+				return
 			}
 			state.LoadedBoard = b
 			RefreshGrid(state)
