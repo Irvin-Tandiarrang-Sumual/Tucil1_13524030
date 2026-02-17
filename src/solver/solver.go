@@ -2,9 +2,22 @@ package solver
 
 import (
 	"queens/board"
+	"time"
 )
 
-func FirstPermutation(dimension int) []int {
+func Solve(b board.Board, onUpdate func(board.Board)) (board.Board, int, int) {
+	firstPermutation := firstPermutation(b.ColLength)
+	var solution board.Board
+	var countPermutations int
+	start := time.Now()
+	if !generatePermutation(firstPermutation, b, &solution, &countPermutations, onUpdate) {
+		solution = board.Board{}
+	}
+	finish := time.Now()
+	totalTime := finish.Sub(start)
+	return solution, countPermutations, int(totalTime.Milliseconds())
+}
+func firstPermutation(dimension int) []int {
 	queenPositions := make([]int, dimension)
 	for i := 0; i < dimension; i++ {
 		queenPositions[i] = i
@@ -12,7 +25,7 @@ func FirstPermutation(dimension int) []int {
 	return queenPositions
 }
 
-func PermutationToBoard(queenPositions []int, template board.Board) board.Board {
+func permutationToBoard(queenPositions []int, template board.Board) board.Board {
 	newBoard := template.DeepCopy()
 	n := len(queenPositions)
 	for row := 0; row < n; row++ {
@@ -21,8 +34,14 @@ func PermutationToBoard(queenPositions []int, template board.Board) board.Board 
 	return *newBoard
 }
 
-func CheckPermutation(queenPositions []int, template board.Board, solution *board.Board, countPermutations int) bool {
-	b := PermutationToBoard(queenPositions, template)
+func checkPermutation(queenPositions []int, template board.Board, solution *board.Board, countPermutations int, onUpdate func(board.Board)) bool {
+	b := permutationToBoard(queenPositions, template)
+
+	if countPermutations%200 == 0 {
+		onUpdate(b)
+
+		time.Sleep(time.Millisecond * 2)
+	}
 
 	if b.IsSolution() {
 		*solution = b
@@ -31,17 +50,17 @@ func CheckPermutation(queenPositions []int, template board.Board, solution *boar
 	return false
 }
 
-func GeneratePermutation(queenPositions []int, template board.Board, solution *board.Board, countPermutations *int) bool {
+func generatePermutation(queenPositions []int, template board.Board, solution *board.Board, countPermutations *int, onUpdate func(board.Board)) bool {
 	if len(queenPositions) == 0 {
 		*countPermutations += 1
-		return CheckPermutation(queenPositions, template, solution, *countPermutations)
+		return checkPermutation(queenPositions, template, solution, *countPermutations, onUpdate)
 	}
 
 	var rc func(int) bool
 	rc = func(np int) bool {
 		if np == 1 {
 			*countPermutations += 1
-			return CheckPermutation(queenPositions, template, solution, *countPermutations)
+			return checkPermutation(queenPositions, template, solution, *countPermutations, onUpdate)
 		}
 		np1 := np - 1
 		pp := len(queenPositions) - np1
