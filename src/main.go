@@ -81,8 +81,10 @@ func main() {
 		go func() {
 
 			updateUI := func(b board.Board) {
-				state.LoadedBoard = b
-				refreshGrid(state)
+				fyne.DoAndWait(func() {
+					state.LoadedBoard = b
+					refreshGrid(state)
+				})
 			}
 
 			solution, count, duration := solver.Solve(state.LoadedBoard, updateUI)
@@ -118,7 +120,7 @@ func main() {
 
 			saveSolutionErr := state.SolutionBoard.BoardToTxt(writer.URI().Path())
 			if saveSolutionErr != nil {
-				dialog.ShowError(err, state.Window)
+				dialog.ShowError(saveSolutionErr, state.Window)
 			} else {
 				dialog.ShowInformation("Succes Save", "File saved successfully", state.Window)
 			}
@@ -166,7 +168,5 @@ func refreshGrid(state *AppState) {
 	}
 
 	state.GridDisplay.Objects = []fyne.CanvasObject{grid}
-	fyne.DoAndWait(func() {
-		state.GridDisplay.Refresh()
-	})
+	state.GridDisplay.Refresh()
 }
