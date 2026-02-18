@@ -24,11 +24,12 @@ go build
 ```
 ## Running the Program
 
-### Option 1: Using Executable File
+### Option 1: Using Executable File 
 ```bash
-cd bin
-./queens
+cd bin/<folder>
+./<filename>
 ```
+Note: the folder can be a Linux or Windows folder, and the file name depends on each folder.
 
 ### Option 2: Using go run
 ```bash
